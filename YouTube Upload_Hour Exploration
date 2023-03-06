@@ -1,0 +1,180 @@
+import pandas as pd
+import numpy as np 
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy import stats
+
+%matplotlib inline 
+df_US = pd.read_csv('/Users/michaelsegaline/Desktop/WGU/New Program/D214 Capstone/USvideos_raw.csv')
+df_GB = pd.read_csv('/Users/michaelsegaline/Desktop/YouTube Datasets/GBvideos.csv')
+df_DE = pd.read_csv('/Users/michaelsegaline/Desktop/YouTube Datasets/DEvideos.csv')
+df_IN = pd.read_csv('/Users/michaelsegaline/Desktop/YouTube Datasets/INvideos.csv')
+df_FR = pd.read_csv('/Users/michaelsegaline/Desktop/YouTube Datasets/FRvideos.csv')
+
+#--Exploring and Cleaning the dataset--#
+
+df_US.head()
+
+#-- Now inspecting the data types --#
+
+df_US.dtypes
+
+#-- Checking shape before dropping any null values --#
+
+df_US.shape
+
+#-- Dropping any null values --#
+
+df_US = df_US.dropna()
+
+#-- 98.6% full 1.4% Sparse --#
+
+df_US.shape
+
+#-- Exploring Descriptive Statistics --#
+
+#-- The average number of 'views' per trending video is 2,370,839. --#
+#-- The average number of 'likes' per trending video is 74,616 --#
+#-- The average number of 'dislikes' per treding video is 3,508 --#
+#-- The average 'comment_count' per video is 34,316 --#
+
+df_US.describe()
+
+#--Univariate Exploration--#
+#-- Frequency distrobution of videos uploaded against the 'Upload_hour' on a 24hour time scale --#
+
+#-- All time scales are indexed on 'Zulu' time (located in Greenwinch, England) --#
+
+sns.histplot( x = df_US['Upload_hour'], kde = True)
+
+#-- Now plotting the distrobution of 'views'.--#
+
+df_US.views.plot()
+
+#-- Now plotting the distrobtion of 'likes'. --#
+
+df_US.likes.plot()
+
+#-- Plotting the distrobution of the "comment_count". --#
+
+df_US.comment_count.plot()
+
+#-- Plotting the distrobution of 'dislikes'. --#
+
+df_US.dislikes.plot()
+
+#-- Bivariate Exploration --#
+#-- Below is the frequency distrobution of the number of 'views' against the 'Upload_hour' --#
+#-- Notice how it is opposite of the 'Upload_hour' frequency --#
+
+sns.relplot(data=df_US, x="Upload_hour", y="views", kind="line")
+
+#-- Below is the number of 'likes' plotted against 'upload_hour' --#
+
+sns.relplot(
+    data=df_US, x="Upload_hour", y="likes",
+     sizes=(15, 200), kind = 'line'
+)
+
+#-- Now plotting the frequency distobution of 'comment_count' against 'upload_hour' --#
+
+sns.relplot(data=df_US, x="Upload_hour", y="comment_count", kind="line")
+
+#-- Now plotting 'dislikes' against the 'upload_hour' --#
+
+sns.relplot(data=df_US, x="Upload_hour", y="dislikes", kind="line")
+
+# -- 3D graphs of views, likes, and upload hour --# 
+# -- jointplot() plots the relationship or joint distribution of two variables while adding marginal axes that show the univariate distribution of each one separately.
+
+#-- Imagine the video content is a rubber ball and if you drop your rubber ball at a certain time, the ball will bounce a certain hieght.
+
+sns.jointplot(data=df_US, x="views", y="likes", hue="Upload_hour")
+
+# Creating the KPI for exploration.¶
+# Engagment Per View (EPV) = 'views' / ('likes' + 'dislikes' + 'comment_count')
+
+#-- Creating Total Engagment Per View --#
+
+EPV = df_US.views /(df_US.likes + df_US.dislikes + df_US.comment_count)
+#-- Plotting Total Engagment Per View --#
+#-- Outliers excluded, this distrobution appears to have one mode. --#
+
+EPV.plot()
+
+#-- Creating a denisty plot of EPV against Upload hour --#
+#-- The distobution density is skewed towards the zero hour --#
+
+sns.kdeplot(data=df_US, x= EPV, hue='Upload_hour', multiple="stack")
+
+#-- Now plotting the frequency distobution of EPV against 'upload_hour' --#
+
+sns.relplot(data=df_US, x="Upload_hour", y=EPV, kind="line")
+
+# -- Conducting a Shapiro - Wilk Tests for normality.--#
+
+#-- Running Shapiro Wilk test to gage normality of EPV--#
+x6 = EPV
+shapiro_test = stats.shapiro(x6)
+shapiro_test
+shapiro_test.statistic
+shapiro_test.pvalue
+
+#-- Running Shapiro Wilk test to gage normality of 'views'--#
+x1 = df_US.views
+shapiro_test = stats.shapiro(x1)
+shapiro_test
+shapiro_test.statistic
+shapiro_test.pvalue
+
+#-- Running Shapiro Wilk test to gage normality of 'comment_count'--#
+x2 = df_US.comment_count
+shapiro_test = stats.shapiro(x2)
+shapiro_test
+shapiro_test.statistic
+shapiro_test.pvalue
+
+#-- Running Shapiro Wilk test to gage normality of 'likes'--#
+x4 = df_US.likes
+shapiro_test = stats.shapiro(x4)
+shapiro_test
+shapiro_test.statistic
+shapiro_test.pvalue
+
+#-- Now Cleaning and Exploring the remaining Countries Datasets--#
+#-- Dropping all the rows with missing values --#
+
+df_GB.dropna() 
+df_DE.dropna()
+df_IN.dropna()
+df_FR.dropna()
+
+#-- Creating Total Engagment Per View, Per Country --#
+
+EPV_GB = df_GB.views /(df_GB.likes + df_GB.dislikes + df_GB.comment_count)
+EPV_DE = df_DE.views /(df_DE.likes + df_DE.dislikes + df_DE.comment_count)
+EPV_IN = df_IN.views /(df_IN.likes + df_IN.dislikes + df_IN.comment_count)
+EPV_FR = df_FR.views /(df_FR.likes + df_FR.dislikes + df_FR.comment_count)
+
+#--The Prime Time for Great Britian is:-_#
+
+#-- Now plotting the frequency distobution of EPV against 'Upload_Hour' --#
+
+sns.relplot(data=df_GB, x="Upload_Hour", y=EPV_GB, kind="line")
+
+#-- The Prime Time for Denmark is:¶ --#
+#-- Now plotting the frequency distobution of EPV against 'Upload_Hour' --#
+
+sns.relplot(data=df_DE, x="Upload_Hour", y=EPV_DE, kind="line")
+
+#--The Prime Time for India:--#
+
+#-- Now plotting the frequency distobution of EPV against 'Upload_Hour' --#
+
+sns.relplot(data=df_IN, x="Upload_Hour", y=EPV_FR, kind="line")
+
+#-- Prime Time for France:--#
+
+#-- Now plotting the frequency distobution of EPV against 'Upload_Hour' --#
+
+sns.relplot(data=df_FR, x="Upload_Hour", y=EPV_FR, kind="line")
